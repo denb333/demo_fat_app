@@ -10,6 +10,7 @@ class CoursePage extends StatefulWidget {
 }
 
 class _CoursePage extends State<CoursePage> {
+  String username = '';
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   List<Map<String, dynamic>> courses = [];
@@ -20,6 +21,14 @@ class _CoursePage extends State<CoursePage> {
     super.initState();
     _fetchCourses();
     _fetchRegisteredCourses();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      // Load username if needed
+    }
   }
 
   Future<void> _fetchCourses() async {
@@ -47,6 +56,22 @@ class _CoursePage extends State<CoursePage> {
         'registeredCourses': FieldValue.arrayUnion([courseId]),
       });
       _fetchRegisteredCourses();
+    }
+  }
+
+  Future<void> _addCourse(String name, String teacher, String startTime,
+      String endTime, String description) async {
+    try {
+      await _firestore.collection('Courses').add({
+        'name': name,
+        'teacher': teacher,
+        'startTime': startTime,
+        'endTime': endTime,
+        'description': description,
+      });
+      _fetchCourses(); // Refresh the list after adding
+    } catch (e) {
+      print('Failed to add course: $e');
     }
   }
 
@@ -96,14 +121,22 @@ class _CoursePage extends State<CoursePage> {
                 return _buildClassCard(
                   course['name'],
                   course['teacher'],
-                  course['startTime'] + ' - ' + course['endTime'],
-                  course['price'],
+                  '${course['startTime']} - ${course['endTime']}',
+                  course['price'] ?? 0.0,
                   course['description'],
                   isRegistered,
                   course['id'],
                 );
               }).toList(),
             ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              // Example: Add a new course
+              _addCourse('Math', 'Mr. Smith', '14:00', '15:00',
+                  'An introductory math course');
+            },
+            child: const Text('Add Course'),
           ),
         ],
       ),
@@ -129,22 +162,12 @@ class _CoursePage extends State<CoursePage> {
             label: 'Find a tutor',
           ),
         ],
-        onTap: (int index) {
-          switch (index) {
-            case 0:
-              Navigator.of(context).pushNamed('/interactLearning');
-              break;
-            case 1:
-              Navigator.of(context).pushNamed('/classschedule');
-              break;
-            case 2:
-              Navigator.of(context).pushNamed('/course');
-              break;
-            case 3:
-              Navigator.of(context).pushNamed('/findatutor');
-              break;
-          }
+        onTap: (index) {
+          // Navigation logic here
         },
+        selectedItemColor: Colors.green,
+        unselectedItemColor: Colors.black,
+        currentIndex: 2,
       ),
     );
   }
@@ -188,7 +211,7 @@ class _CoursePage extends State<CoursePage> {
           isRegistered
               ? ElevatedButton(
                   onPressed: () {
-                    // Người dùng đã đăng ký khóa học, thực hiện join
+                    // User has registered, implement join functionality
                   },
                   style:
                       ElevatedButton.styleFrom(backgroundColor: Colors.green),

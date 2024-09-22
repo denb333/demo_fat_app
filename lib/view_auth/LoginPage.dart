@@ -1,5 +1,6 @@
 import 'package:fat_app/auth/auth_service.dart';
 import 'package:fat_app/constants/routes.dart';
+import 'package:fat_app/loading/LoadingView.dart';
 import 'package:fat_app/ultilities/Show_Error_Dialog.dart';
 import 'package:fat_app/firebase_options.dart';
 import 'package:flutter/material.dart';
@@ -54,6 +55,7 @@ class _LoginViewState extends State<LoginView> {
                       labelText: 'Email',
                       border: OutlineInputBorder(),
                     ),
+                    enableSuggestions: true,
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -65,6 +67,7 @@ class _LoginViewState extends State<LoginView> {
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _password,
+                    enableSuggestions: true,
                     decoration: const InputDecoration(
                       labelText: 'Password',
                       border: OutlineInputBorder(),
@@ -86,14 +89,19 @@ class _LoginViewState extends State<LoginView> {
                               email: _email.text, password: _password.text);
                           final user = AuthServices.firebase().currentUser;
                           if (user?.isEmailVerified ?? false) {
-                            Navigator.of(context).pushNamedAndRemoveUntil(
-                              interactlearningpage,
-                              (route) => false,
-                              arguments: {
-                                'email': _email,
-                                // 'name': user?.displayName,
-                              },
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    LoadingView(duration: 3000),
+                              ),
                             );
+                            // Navigator.of(context).pushNamedAndRemoveUntil(
+                            //   interactlearningpage,
+                            //   (route) => false,
+                            //   arguments: {
+                            //     'email': _email,
+                            //   },
+                            // );
                           } else {
                             Navigator.of(context).pushNamedAndRemoveUntil(
                                 emailverifyRoute, (route) => false);

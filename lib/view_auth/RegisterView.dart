@@ -1,4 +1,4 @@
-import 'package:fat_app/auth/auth_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fat_app/constants/routes.dart';
 import 'package:fat_app/firebase_options.dart';
 import 'package:fat_app/ultilities/Show_Error_Dialog.dart';
@@ -14,7 +14,9 @@ class RegisterView extends StatefulWidget {
 }
 
 class _RegisterViewState extends State<RegisterView> {
-  final _formKey = GlobalKey<FormState>();
+  // final _formKey = GlobalKey<FormState>();
+  final CollectionReference myItems =
+      FirebaseFirestore.instance.collection("Users");
   late final TextEditingController _email;
   late final TextEditingController _password;
   late final TextEditingController _name;
@@ -48,7 +50,7 @@ class _RegisterViewState extends State<RegisterView> {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             return Form(
-              key: _formKey,
+              //    key: _formKey,
               child: ListView(
                 padding: const EdgeInsets.all(16.0),
                 children: [
@@ -104,28 +106,44 @@ class _RegisterViewState extends State<RegisterView> {
                   const SizedBox(height: 24),
                   ElevatedButton(
                     onPressed: () async {
-                      if (_formKey.currentState!.validate()) {
+                      //   if (_formKey.currentState!.validate()) {
+                      try {
+                        // Tạo người dùng
+                        firebase_auth.UserCredential userCredential =
+                            await firebase_auth.FirebaseAuth.instance
+                                .createUserWithEmailAndPassword(
+                          email: _email.text,
+                          password: _password.text,
+                        );
+
+                        // Lưu thông tin người dùng vào Firestore
+                        // await FirebaseFirestore.instance
+                        //     .collection('users')
+                        //     .doc(userCredential.user!.uid)
+                        //     .set({
+                        //   'username': _name.text,
+                        //   'email': _email.text,
+                        // });
+                        // Lưu thông tin người dùng vào Firestore
+                        print(
+                            'Attempting to save user data for UID: ${userCredential.user!.uid}');
                         try {
-                          await AuthServices.firebase().createUser(
-                              email: _email.text, password: _password.text);
-
-                          // Update the user's display name
-                          firebase_auth.User? firebaseUser =
-                              firebase_auth.FirebaseAuth.instance.currentUser;
-                          if (firebaseUser != null) {
-                            await firebaseUser.updateDisplayName(_name.text);
-                          }
-
-                          await AuthServices.firebase()
-                              .sendEmailVertification();
-                          Navigator.of(context).pushNamed(emailverifyRoute);
-                          Navigator.of(context).pushNamed(emailverifyRoute);
+                          await myItems.doc(userCredential.user!.uid).set({
+                            'username': _name.text,
+                            'email': _email.text,
+                          });
+                          print('User data saved successfully');
                         } catch (e) {
-                          await Show_Error_Dialog(
-                              context, 'Failed to register: ${e.toString()}');
+                          print('Error saving user data: $e');
                         }
+                        // Điều hướng đến trang xác nhận email hoặc trang chính
+                        Navigator.of(context).pushNamed(emailverifyRoute);
+                      } catch (e) {
+                        await Show_Error_Dialog(
+                            context, 'Failed to register: ${e.toString()}');
                       }
                     },
+                    //    },
                     child: const Text('Register'),
                   ),
                   TextButton(

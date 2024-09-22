@@ -1,7 +1,48 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class ClassSchedulePage extends StatelessWidget {
+class ClassSchedulePage extends StatefulWidget {
   const ClassSchedulePage({super.key});
+
+  @override
+  State<StatefulWidget> createState() => _ClassSchedulePage();
+}
+
+class _ClassSchedulePage extends State<ClassSchedulePage> {
+  String username = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        DocumentSnapshot doc = await FirebaseFirestore.instance
+            .collection('Users')
+            .doc(user.uid)
+            .get();
+
+        if (doc.exists) {
+          setState(() {
+            username = doc.get('username') as String? ?? '';
+          });
+          print('Logged in user: $username');
+        } else {
+          print('User document does not exist');
+        }
+      } else {
+        print('No user is currently logged in');
+      }
+    } catch (e) {
+      print('Error loading user data: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -101,7 +142,7 @@ class ClassSchedulePage extends StatelessWidget {
         onTap: (int index) {
           switch (index) {
             case 0:
-              Navigator.of(context).pushNamed('/interactLearning');
+              Navigator.of(context).pushNamed('/interactlearning');
               break;
             case 1:
               Navigator.of(context).pushNamed('/classschedule');
@@ -114,6 +155,9 @@ class ClassSchedulePage extends StatelessWidget {
               break;
           }
         },
+        selectedItemColor: Colors.green,
+        unselectedItemColor: Colors.black,
+        currentIndex: 1,
       ),
     );
   }

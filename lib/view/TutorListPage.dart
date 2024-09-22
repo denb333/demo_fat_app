@@ -78,6 +78,48 @@ class _TutorListPageState extends State<TutorListPage> {
           }))
         ],
       ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: [
+          BottomNavigationBarItem(
+            icon: _buildIconWithBackground(
+                Icons.play_circle_filled, Colors.green.shade100),
+            label: 'Interact Learning',
+          ),
+          BottomNavigationBarItem(
+            icon:
+                _buildIconWithBackground(Icons.schedule, Colors.green.shade100),
+            label: 'Class Schedule',
+          ),
+          BottomNavigationBarItem(
+            icon: _buildIconWithBackground(Icons.book, Colors.green.shade100),
+            label: 'Courses',
+          ),
+          BottomNavigationBarItem(
+            icon: _buildIconWithBackground(
+                Icons.person_search, Colors.green.shade100),
+            label: 'Find a tutor',
+          ),
+        ],
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              Navigator.of(context).pushNamed('/interactlearning');
+              break;
+            case 1:
+              Navigator.of(context).pushNamed('/classschedule');
+              break;
+            case 2:
+              Navigator.of(context).pushNamed('/course');
+              break;
+            case 3:
+              Navigator.of(context).pushNamed('/findatutor');
+              break;
+          }
+        },
+        selectedItemColor: Colors.green,
+        unselectedItemColor: Colors.black,
+        currentIndex: 3,
+      ),
     );
   }
 }
@@ -95,6 +137,18 @@ Widget _buildTutorCard(
       subtitle: Text(distance),
       trailing: const Icon(Icons.arrow_forward),
       onTap: () {},
+    ),
+  );
+}
+
+Widget _buildIconWithBackground(IconData icon, Color color) {
+  return CircleAvatar(
+    backgroundColor: color,
+    radius: 20,
+    child: Icon(
+      icon,
+      size: 25,
+      color: Colors.green.shade900,
     ),
   );
 }
