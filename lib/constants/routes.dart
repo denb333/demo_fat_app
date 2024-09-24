@@ -14,3 +14,4 @@ const inbox = '/inbox';
 const fatutorpage = '/findatutor';
 const chatpage = '/chat';
 const livestreampage = '/livestream';
+const joinscreen = '/join';

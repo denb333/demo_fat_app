@@ -1,3 +1,4 @@
+import 'package:fat_app/Model/Courses.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -11,9 +12,11 @@ class CoursePage extends StatefulWidget {
 
 class _CoursePage extends State<CoursePage> {
   String username = '';
+  final CollectionReference coursesCollection =
+      FirebaseFirestore.instance.collection('Courses');
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  List<Map<String, dynamic>> courses = [];
+  List<Course> courses = []; // Sử dụng danh sách Course thay vì Map
   List<String> registeredCourses = [];
 
   @override
@@ -25,27 +28,37 @@ class _CoursePage extends State<CoursePage> {
   }
 
   Future<void> _loadUserData() async {
-    User? user = FirebaseAuth.instance.currentUser;
+    User? user = _auth.currentUser;
     if (user != null) {
-      // Load username if needed
+      // Load username if needed (Có thể thêm vào nếu bạn cần)
     }
   }
 
   Future<void> _fetchCourses() async {
-    final result = await _firestore.collection('Courses').get();
-    setState(() {
-      courses = result.docs.map((doc) => doc.data()).toList();
-    });
+    try {
+      final result = await _firestore.collection('Courses').get();
+      setState(() {
+        courses =
+            result.docs.map((doc) => Course.fromDocumentSnapshot(doc)).toList();
+      });
+    } catch (e) {
+      print('Failed to fetch courses: $e');
+    }
   }
 
   Future<void> _fetchRegisteredCourses() async {
     User? user = _auth.currentUser;
     if (user != null) {
-      final userDoc = await _firestore.collection('Users').doc(user.uid).get();
-      setState(() {
-        registeredCourses =
-            List<String>.from(userDoc.data()?['registeredCourses'] ?? []);
-      });
+      try {
+        final userDoc =
+            await _firestore.collection('Users').doc(user.uid).get();
+        setState(() {
+          registeredCourses =
+              List<String>.from(userDoc.data()?['registeredCourses'] ?? []);
+        });
+      } catch (e) {
+        print('Failed to fetch registered courses: $e');
+      }
     }
   }
 
@@ -100,45 +113,67 @@ class _CoursePage extends State<CoursePage> {
         ),
         automaticallyImplyLeading: false,
       ),
-      body: Column(
-        children: [
-          const Padding(
-            padding: EdgeInsets.all(8.0),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Expected class',
-                style: TextStyle(fontSize: 24, color: Colors.blue),
-              ),
-            ),
-          ),
-          Expanded(
-            child: GridView.count(
-              padding: const EdgeInsets.all(10),
-              crossAxisCount: 2,
-              children: courses.map((course) {
-                bool isRegistered = registeredCourses.contains(course['id']);
-                return _buildClassCard(
-                  course['name'],
-                  course['teacher'],
-                  '${course['startTime']} - ${course['endTime']}',
-                  course['price'] ?? 0.0,
-                  course['description'],
-                  isRegistered,
-                  course['id'],
-                );
-              }).toList(),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              // Example: Add a new course
-              _addCourse('Math', 'Mr. Smith', '14:00', '15:00',
-                  'An introductory math course');
-            },
-            child: const Text('Add Course'),
-          ),
-        ],
+      body: StreamBuilder<QuerySnapshot>(
+        stream: coursesCollection.snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.hasError) {
+            return Center(
+                child: Text('Có lỗi xảy ra. Vui lòng đăng nhập lại.'));
+          }
+
+          if (snapshot.hasData) {
+            List<Course> courses = snapshot.data!.docs.map((doc) {
+              return Course.fromDocumentSnapshot(doc);
+            }).toList();
+
+            return Column(
+              children: [
+                const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Expected class',
+                      style: TextStyle(fontSize: 24, color: Colors.blue),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: GridView.count(
+                    padding: const EdgeInsets.all(10),
+                    crossAxisCount: 2,
+                    children: courses.map((course) {
+                      bool isRegistered = registeredCourses.contains(course.id);
+                      return _buildClassCard(
+                        course.subject,
+                        course.teacher,
+                        '${course.startTime} - ${course.endTime}',
+                        course.price,
+                        course.description,
+                        isRegistered,
+                        course.id,
+                      );
+                    }).toList(),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    // Example: Add a new course
+                    _addCourse('Math', 'Mr. Smith', '14:00', '15:00',
+                        'An introductory math course');
+                  },
+                  child: const Text('Add Course'),
+                ),
+              ],
+            );
+          }
+
+          return Center(child: Text('No courses available.'));
+        },
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: [
@@ -193,39 +228,43 @@ class _CoursePage extends State<CoursePage> {
     String courseId,
   ) {
     return Card(
-      margin: const EdgeInsets.all(10),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            subject,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        margin: const EdgeInsets.all(10),
+        child: Container(
+          color: Colors.green,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                subject,
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 5),
+              Text('Teacher: $teacher'),
+              const SizedBox(height: 5),
+              Text(time),
+              const SizedBox(height: 10),
+              Text(description),
+              const SizedBox(height: 5),
+              isRegistered
+                  ? ElevatedButton(
+                      onPressed: () {
+                        // User has registered, implement join functionality
+                      },
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green),
+                      child: const Text('Join'),
+                    )
+                  : ElevatedButton(
+                      onPressed: () {
+                        _registerCourse(courseId);
+                      },
+                      style:
+                          ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                      child: Text('Buy for \$$price'),
+                    ),
+            ],
           ),
-          const SizedBox(height: 5),
-          Text('Teacher: $teacher'),
-          const SizedBox(height: 5),
-          Text(time),
-          const SizedBox(height: 10),
-          Text(description),
-          const SizedBox(height: 5),
-          isRegistered
-              ? ElevatedButton(
-                  onPressed: () {
-                    // User has registered, implement join functionality
-                  },
-                  style:
-                      ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                  child: const Text('Join'),
-                )
-              : ElevatedButton(
-                  onPressed: () {
-                    _registerCourse(courseId);
-                  },
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                  child: Text('Buy for \$$price'),
-                ),
-        ],
-      ),
-    );
+        ));
   }
 }
