@@ -16,7 +16,7 @@ class _CoursePage extends State<CoursePage> {
       FirebaseFirestore.instance.collection('Courses');
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  List<Course> courses = []; // Sử dụng danh sách Course thay vì Map
+  List<Course> courses = [];
   List<String> registeredCourses = [];
 
   @override
@@ -30,7 +30,9 @@ class _CoursePage extends State<CoursePage> {
   Future<void> _loadUserData() async {
     User? user = _auth.currentUser;
     if (user != null) {
-      // Load username if needed (Có thể thêm vào nếu bạn cần)
+      setState(() {
+        username = user.displayName ?? '';
+      });
     }
   }
 
@@ -50,6 +52,7 @@ class _CoursePage extends State<CoursePage> {
     User? user = _auth.currentUser;
     if (user != null) {
       try {
+        //get document by user
         final userDoc =
             await _firestore.collection('Users').doc(user.uid).get();
         setState(() {
@@ -65,26 +68,14 @@ class _CoursePage extends State<CoursePage> {
   Future<void> _registerCourse(String courseId) async {
     User? user = _auth.currentUser;
     if (user != null) {
-      await _firestore.collection('Users').doc(user.uid).update({
-        'registeredCourses': FieldValue.arrayUnion([courseId]),
-      });
-      _fetchRegisteredCourses();
-    }
-  }
-
-  Future<void> _addCourse(String name, String teacher, String startTime,
-      String endTime, String description) async {
-    try {
-      await _firestore.collection('Courses').add({
-        'name': name,
-        'teacher': teacher,
-        'startTime': startTime,
-        'endTime': endTime,
-        'description': description,
-      });
-      _fetchCourses(); // Refresh the list after adding
-    } catch (e) {
-      print('Failed to add course: $e');
+      try {
+        await _firestore.collection('Users').doc(user.uid).update({
+          'registeredCourses': FieldValue.arrayUnion([courseId]),
+        });
+        _fetchRegisteredCourses();
+      } catch (e) {
+        print('Failed to register course: $e');
+      }
     }
   }
 
@@ -99,9 +90,9 @@ class _CoursePage extends State<CoursePage> {
               backgroundImage: AssetImage('images/students.png'),
             ),
             const SizedBox(width: 10),
-            const Text(
-              'Trần Đức Vũ',
-              style: TextStyle(color: Colors.black),
+            Text(
+              username.isNotEmpty ? username : 'User',
+              style: const TextStyle(color: Colors.black),
             ),
             const Spacer(),
             IconButton(
@@ -149,29 +140,19 @@ class _CoursePage extends State<CoursePage> {
                     children: courses.map((course) {
                       bool isRegistered = registeredCourses.contains(course.id);
                       return _buildClassCard(
-                        course.subject,
-                        course.teacher,
-                        '${course.startTime} - ${course.endTime}',
-                        course.price,
-                        course.description,
-                        isRegistered,
-                        course.id,
-                      );
+                          course.subject,
+                          course.teacher,
+                          '${course.startTime} - ${course.endTime}',
+                          course.price,
+                          course.description,
+                          isRegistered,
+                          course.id);
                     }).toList(),
                   ),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    // Example: Add a new course
-                    _addCourse('Math', 'Mr. Smith', '14:00', '15:00',
-                        'An introductory math course');
-                  },
-                  child: const Text('Add Course'),
                 ),
               ],
             );
           }
-
           return Center(child: Text('No courses available.'));
         },
       ),
@@ -198,7 +179,23 @@ class _CoursePage extends State<CoursePage> {
           ),
         ],
         onTap: (index) {
-          // Navigation logic here
+          switch (index) {
+            case 0:
+              Navigator.of(context).pushNamed('/interactlearning');
+              break;
+            case 1:
+              Navigator.of(context).pushNamed('/classschedule');
+              break;
+            case 2:
+              Navigator.of(context).pushNamed('/course');
+              break;
+            case 3:
+              Navigator.of(context).pushNamed('/chat');
+              break;
+            case 4:
+              Navigator.of(context).pushNamed('/findatutor');
+              break;
+          }
         },
         selectedItemColor: Colors.green,
         unselectedItemColor: Colors.black,
@@ -218,6 +215,39 @@ class _CoursePage extends State<CoursePage> {
     );
   }
 
+  void _showConfirmationDialog(
+      BuildContext context, double price, String courseId) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("Xác nhận mua khóa học"),
+            content: Text("Bạn xác nhận mua khóa học với giá\$$price"),
+            actions: <Widget>[
+              TextButton(
+                  child: Text("Không"),
+                  onPressed: () {
+                    Navigator.of(context).pop;
+                  }),
+              TextButton(
+                child: Text('Có'),
+                onPressed: () {
+                  Navigator.of(context).pop(); // Đóng hộp thoại
+                  _navigateToPaymentPage(courseId, price);
+                },
+              ),
+            ],
+          );
+        });
+  }
+
+  void _navigateToPaymentPage(String courseId, double price) {
+    Navigator.of(context).pushNamed('/payment', arguments: {
+      'courseId': courseId,
+      'price': price,
+    });
+  }
+
   Widget _buildClassCard(
     String subject,
     String teacher,
@@ -228,43 +258,42 @@ class _CoursePage extends State<CoursePage> {
     String courseId,
   ) {
     return Card(
-        margin: const EdgeInsets.all(10),
-        child: Container(
-          color: Colors.green,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                subject,
-                style:
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 5),
-              Text('Teacher: $teacher'),
-              const SizedBox(height: 5),
-              Text(time),
-              const SizedBox(height: 10),
-              Text(description),
-              const SizedBox(height: 5),
-              isRegistered
-                  ? ElevatedButton(
-                      onPressed: () {
-                        // User has registered, implement join functionality
-                      },
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green),
-                      child: const Text('Join'),
-                    )
-                  : ElevatedButton(
-                      onPressed: () {
-                        _registerCourse(courseId);
-                      },
-                      style:
-                          ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                      child: Text('Buy for \$$price'),
-                    ),
-            ],
-          ),
-        ));
+      margin: const EdgeInsets.all(10),
+      child: Container(
+        color: Colors.green,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              subject,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 5),
+            Text('Teacher: $teacher'),
+            const SizedBox(height: 5),
+            Text(time),
+            const SizedBox(height: 10),
+            Text(description),
+            const SizedBox(height: 5),
+            isRegistered
+                ? ElevatedButton(
+                    onPressed: () {},
+                    style:
+                        ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                    child: const Text('Join'),
+                  )
+                : ElevatedButton(
+                    onPressed: () {
+                      _registerCourse(courseId);
+                      _showConfirmationDialog(context, price, courseId);
+                    },
+                    style:
+                        ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                    child: Text('Buy for \$$price'),
+                  ),
+          ],
+        ),
+      ),
+    );
   }
 }

@@ -1,7 +1,7 @@
+import 'package:fat_app/payment/PaymentMethodScreen.dart';
 import 'package:fat_app/view_auth/EmailVerify.dart';
 import 'package:fat_app/view_auth/LoginPage.dart';
 import 'package:fat_app/view/LiveStreamPage.dart';
-import 'package:fat_app/view/ChatPage.dart';
 import 'package:fat_app/view/ClassSchedulePage.dart';
 import 'package:fat_app/view/CoursePage.dart';
 import 'package:fat_app/view/TutorListPage.dart';
@@ -17,8 +17,7 @@ void main() {
         useMaterial3: true),
     home: const HomePage(),
     routes: {
-      livestreampage: (context) => const LiveStreamPage(),
-      chatpage: (context) => const ChatPage(),
+      livestreampage: (context) => LiveStreamPage(),
       classschedulePage: (context) => const ClassSchedulePage(),
       coursepage: (context) => const CoursePage(),
       fatutorpage: (context) => const TutorListPage(),
@@ -26,6 +25,7 @@ void main() {
       loginRoutes: (context) => const LoginView(),
       registerRoutes: (context) => const RegisterView(),
       emailverifyRoute: (context) => const EmailVerify(),
+      paymentRoutes: (context) => PaymentMethodScreen()
     },
   ));
 }

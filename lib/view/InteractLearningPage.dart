@@ -161,6 +161,10 @@ class _InteractLearningPageState extends State<InteractLearningPage> {
             label: 'Courses',
           ),
           BottomNavigationBarItem(
+            icon: _buildIconWithBackground(Icons.chat, Colors.green.shade100),
+            label: 'Inbox',
+          ),
+          BottomNavigationBarItem(
             icon: _buildIconWithBackground(
                 Icons.person_search, Colors.green.shade100),
             label: 'Find a tutor',
@@ -178,6 +182,9 @@ class _InteractLearningPageState extends State<InteractLearningPage> {
               Navigator.of(context).pushNamed('/course');
               break;
             case 3:
+              Navigator.of(context).pushNamed('/chat');
+              break;
+            case 4:
               Navigator.of(context).pushNamed('/findatutor');
               break;
           }

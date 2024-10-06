@@ -18,7 +18,7 @@ class _LoadingViewState extends State<LoadingView> {
   }
 
   Future<void> _simulateLoading() async {
-    for (int i = 0; i <= 100; i++) {
+    for (int i = 0; i <= 50; i++) {
       await Future.delayed(const Duration(milliseconds: 30));
       setState(() {
         _progress = i;
@@ -38,9 +38,12 @@ class _LoadingViewState extends State<LoadingView> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(),
+            CircularProgressIndicator(
+              color: Colors.greenAccent,
+              backgroundColor: Colors.blueGrey,
+            ),
             const SizedBox(height: 20),
-            Text('$_progress%'),
+            //     Text('$_progress%'),
           ],
         ),
       ),
