@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'ChatScreen.dart';
 
 class ChatListPage extends StatefulWidget {
   @override
@@ -67,13 +66,13 @@ class _ChatListPageState extends State<ChatListPage> {
 
                           return GestureDetector(
                             onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      ChatScreen(userId: userId),
-                                ),
-                              );
+                              // Navigator.push(
+                              //   context,
+                              //   MaterialPageRoute(
+                              //     builder: (context) =>
+                              //         ChatScreen(userId: userId),
+                              //   ),
+                              // );
                             },
                             child: Padding(
                               padding: const EdgeInsets.only(

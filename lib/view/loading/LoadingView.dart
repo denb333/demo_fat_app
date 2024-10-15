@@ -2,7 +2,8 @@ import 'package:fat_app/constants/routes.dart';
 import 'package:flutter/material.dart';
 
 class LoadingView extends StatefulWidget {
-  const LoadingView({Key? key, required int duration}) : super(key: key);
+  final int duration;
+  const LoadingView({Key? key, required this.duration}) : super(key: key);
 
   @override
   _LoadingViewState createState() => _LoadingViewState();

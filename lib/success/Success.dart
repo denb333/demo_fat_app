@@ -46,7 +46,7 @@ class PaymentSuccessPage extends StatelessWidget {
 
               SizedBox(height: 10),
 
-              // Text thông báo chi tiết
+              // show announce detaild
               Text(
                 'Your payment was done successfully',
                 style: TextStyle(
@@ -57,15 +57,12 @@ class PaymentSuccessPage extends StatelessWidget {
               ),
 
               SizedBox(height: 30),
-
-              // Nút OK
               ElevatedButton(
                 onPressed: () {
-                  // Xử lý sự kiện khi bấm nút OK
                   Navigator.of(context).pop();
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.redAccent, // Màu nền của nút
+                  backgroundColor: Colors.redAccent,
                   padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),

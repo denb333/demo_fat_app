@@ -103,7 +103,6 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          // Nút Like
                           IconButton(
                             icon: Icon(Icons.thumb_up),
                             onPressed: () {
@@ -114,8 +113,6 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
                             },
                           ),
                           Text(document['likes'].toString()),
-
-                          // Nút Dislike
                           IconButton(
                             icon: Icon(Icons.thumb_down),
                             onPressed: () {

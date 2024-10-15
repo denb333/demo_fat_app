@@ -17,7 +17,6 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Lấy đối số khi trang được điều hướng tới
     final args =
         ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
     price = args['price'];

@@ -1,23 +1,25 @@
 import 'package:fat_app/auth/auth_provider.dart';
 import 'package:fat_app/auth/auth_user.dart';
 import 'package:fat_app/auth/firebase_auth_provider.dart';
+import 'package:flutter/material.dart';
 
 class AuthServices implements AuthProvider {
   final AuthProvider provider;
+
   const AuthServices(this.provider);
+
+  factory AuthServices.firebase(BuildContext context) =>
+      AuthServices(FirebaseAuthProvider(context: context));
 
   @override
   Future<void> LogOut() => provider.LogOut();
-  // TODO: implement LogOut
-  factory AuthServices.firebase() => AuthServices(FirebaseAuthProvider());
+
   @override
   Future<AuthUser> createUser(
           {required String email, required String password}) =>
       provider.createUser(email: email, password: password);
-  // TODO: implement createUser
 
   @override
-  // TODO: implement currentUser
   AuthUser? get currentUser => provider.currentUser;
 
   @override
@@ -29,6 +31,7 @@ class AuthServices implements AuthProvider {
 
   @override
   Future<void> initialize() => provider.initialize();
+
   @override
   Future<void> sendPasswordReset({required String toEmail}) =>
       provider.sendPasswordReset(toEmail: toEmail);

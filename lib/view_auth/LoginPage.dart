@@ -1,8 +1,8 @@
 import 'package:fat_app/auth/auth_service.dart';
 import 'package:fat_app/constants/routes.dart';
-import 'package:fat_app/loading/LoadingView.dart';
 import 'package:fat_app/ultilities/Show_Error_Dialog.dart';
 import 'package:fat_app/firebase_options.dart';
+import 'package:fat_app/view/loading/LoadingView.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 
@@ -85,9 +85,10 @@ class _LoginViewState extends State<LoginView> {
                     onPressed: () async {
                       if (_formKey.currentState!.validate()) {
                         try {
-                          await AuthServices.firebase().logIn(
+                          await AuthServices.firebase(context).logIn(
                               email: _email.text, password: _password.text);
-                          final user = AuthServices.firebase().currentUser;
+                          final user =
+                              AuthServices.firebase(context).currentUser;
                           if (user?.isEmailVerified ?? false) {
                             Navigator.of(context).push(
                               MaterialPageRoute(

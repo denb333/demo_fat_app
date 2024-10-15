@@ -1,4 +1,5 @@
-import 'package:fat_app/payment/PaymentMethodScreen.dart';
+import 'package:fat_app/view/UpdateInformationPage.dart';
+import 'package:fat_app/view/payment/PaymentMethodScreen.dart';
 import 'package:fat_app/view_auth/EmailVerify.dart';
 import 'package:fat_app/view_auth/LoginPage.dart';
 import 'package:fat_app/view/LiveStreamPage.dart';
@@ -25,7 +26,8 @@ void main() {
       loginRoutes: (context) => const LoginView(),
       registerRoutes: (context) => const RegisterView(),
       emailverifyRoute: (context) => const EmailVerify(),
-      paymentRoutes: (context) => PaymentMethodScreen()
+      paymentRoutes: (context) => PaymentMethodScreen(),
+      updateinformationRoutes: (context) => UpdateInformationPage(),
     },
   ));
 }

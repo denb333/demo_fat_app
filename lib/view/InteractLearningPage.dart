@@ -50,8 +50,13 @@ class _InteractLearningPageState extends State<InteractLearningPage> {
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const CircleAvatar(
-              backgroundImage: AssetImage('images/students.png'),
+            GestureDetector(
+              onTap: () {
+                Navigator.of(context).pushNamed('/updateinformation');
+              },
+              child: const CircleAvatar(
+                backgroundImage: AssetImage('images/students.png'),
+              ),
             ),
             Text(username),
             const Icon(Icons.notifications),

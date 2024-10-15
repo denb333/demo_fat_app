@@ -2,7 +2,6 @@ import 'package:fat_app/auth/auth_service.dart';
 import 'package:fat_app/constants/routes.dart';
 import 'package:flutter/material.dart';
 
-
 class EmailVerify extends StatefulWidget {
   const EmailVerify({Key? key}) : super(key: key);
 
@@ -26,7 +25,7 @@ class _EmailVerifyState extends State<EmailVerify> {
           TextButton(
             onPressed: () async {
               try {
-                await AuthServices.firebase().sendEmailVertification();
+                await AuthServices.firebase(context).sendEmailVertification();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Verification email sent')),
                 );
@@ -42,7 +41,7 @@ class _EmailVerifyState extends State<EmailVerify> {
           TextButton(
             onPressed: () async {
               try {
-                await AuthServices.firebase().LogOut();
+                await AuthServices.firebase(context).LogOut();
                 Navigator.of(context).pushNamedAndRemoveUntil(
                   loginRoutes,
                   (route) => false,

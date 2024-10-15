@@ -95,12 +95,16 @@ class _TutorListPageState extends State<TutorListPage> {
             label: 'Courses',
           ),
           BottomNavigationBarItem(
+            icon: _buildIconWithBackground(Icons.chat, Colors.green.shade100),
+            label: 'Inbox',
+          ),
+          BottomNavigationBarItem(
             icon: _buildIconWithBackground(
                 Icons.person_search, Colors.green.shade100),
             label: 'Find a tutor',
           ),
         ],
-        onTap: (index) {
+        onTap: (int index) {
           switch (index) {
             case 0:
               Navigator.of(context).pushNamed('/interactlearning');
@@ -112,6 +116,9 @@ class _TutorListPageState extends State<TutorListPage> {
               Navigator.of(context).pushNamed('/course');
               break;
             case 3:
+              Navigator.of(context).pushNamed('/chat');
+              break;
+            case 4:
               Navigator.of(context).pushNamed('/findatutor');
               break;
           }
