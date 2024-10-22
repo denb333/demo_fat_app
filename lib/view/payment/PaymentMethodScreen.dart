@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:mailer/mailer.dart';
+import 'package:mailer/smtp_server.dart';
 
 class PaymentMethodScreen extends StatefulWidget {
   @override
@@ -6,8 +10,13 @@ class PaymentMethodScreen extends StatefulWidget {
 }
 
 class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   int type = 1;
   double price = 0.0;
+  String subject = '';
+  String username = '';
+
   void handleRadio(Object? e) {
     setState(() {
       type = e as int;
@@ -20,6 +29,26 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
     final args =
         ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
     price = args['price'];
+    subject = args['subject'];
+    username = args['username'];
+  }
+
+  Future<void> sendEmail(String subject, String body) async {
+    final smtpServer = gmail('tranducvuht@gmail.com',
+        '0345934782'); // Thay thế bằng email và mật khẩu ứng dụng của bạn
+
+    final message = Message()
+      ..from = Address('tranducvuht@gmail.com', 'Payment System')
+      ..recipients.add('tranducvuht@gmail.com')
+      ..subject = subject
+      ..text = body;
+
+    try {
+      await send(message, smtpServer);
+      print('Email sent successfully');
+    } catch (e) {
+      print('Failed to send email: $e');
+    }
   }
 
   @override
@@ -40,213 +69,80 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
           child: Center(
             child: Column(
               children: [
-                SizedBox(),
-                // Amazon Pay
-                Container(
-                  width: size.width,
-                  height: 55,
-                  decoration: BoxDecoration(
-                    border: type == 1
-                        ? Border.all(width: 1, color: Colors.black)
-                        : Border.all(width: 0.3, color: Colors.grey),
-                    borderRadius: BorderRadius.circular(5),
-                    color: Colors.transparent,
-                  ),
-                  child: Center(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Radio(
-                          value: 1,
-                          groupValue: type,
-                          onChanged: handleRadio,
-                          activeColor: Color(0xFFDB3022),
-                        ),
-                        Text(
-                          "Amazon Pay",
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                            color: type == 1 ? Colors.black : Colors.grey,
-                          ),
-                        ),
-                        Image.asset(
-                          "images/bank/amazon.png",
-                          width: 70,
-                          height: 70,
-                          fit: BoxFit.cover,
-                        ),
-                      ],
-                    ),
+                Padding(
+                  padding: EdgeInsets.only(top: 10, bottom: 20),
+                  child: Text(
+                    "Select Payment Method",
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                 ),
-                SizedBox(height: 15),
-                // Visa & MasterCard
-                Container(
-                  width: size.width,
-                  height: 55,
-                  decoration: BoxDecoration(
-                    border: type == 2
-                        ? Border.all(width: 1, color: Colors.black)
-                        : Border.all(width: 0.3, color: Colors.grey),
-                    borderRadius: BorderRadius.circular(5),
-                    color: Colors.transparent,
-                  ),
-                  child: Center(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Radio(
-                          value: 2,
-                          groupValue: type,
-                          onChanged: handleRadio,
-                          activeColor: Color(0xFFDB3022),
-                        ),
-                        Text(
-                          "Credit/Debit Card",
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                            color: type == 2 ? Colors.black : Colors.grey,
-                          ),
-                        ),
-                        Image.asset(
-                          "images/bank/visa.png",
-                          width: 35,
-                        ),
-                        SizedBox(width: 8),
-                        Image.asset(
-                          "images/bank/mastercard.png",
-                          width: 35,
-                        ),
-                      ],
-                    ),
-                  ),
+                RadioListTile(
+                  title: Text("Credit Card"),
+                  value: 1,
+                  groupValue: type,
+                  onChanged: handleRadio,
                 ),
-                SizedBox(height: 15),
-                // PayPal
-                Container(
-                  width: size.width,
-                  height: 55,
-                  decoration: BoxDecoration(
-                    border: type == 3
-                        ? Border.all(width: 1, color: Colors.black)
-                        : Border.all(width: 0.3, color: Colors.grey),
-                    borderRadius: BorderRadius.circular(5),
-                    color: Colors.transparent,
-                  ),
-                  child: Center(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Radio(
-                          value: 3,
-                          groupValue: type,
-                          onChanged: handleRadio,
-                          activeColor: Color(0xFFDB3022),
-                        ),
-                        Text(
-                          "PayPal",
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                            color: type == 3 ? Colors.black : Colors.grey,
-                          ),
-                        ),
-                        Image.asset(
-                          "images/bank/paypal.png",
-                          width: 70,
-                          height: 70,
-                          fit: BoxFit.cover,
-                        ),
-                      ],
-                    ),
-                  ),
+                RadioListTile(
+                  title: Text("Bank Transfer"),
+                  value: 2,
+                  groupValue: type,
+                  onChanged: handleRadio,
                 ),
-                SizedBox(height: 15),
-                // Another Payment Method
-                Container(
-                  width: size.width,
-                  height: 55,
-                  decoration: BoxDecoration(
-                    border: type == 4
-                        ? Border.all(width: 1, color: Colors.black)
-                        : Border.all(width: 0.3, color: Colors.grey),
-                    borderRadius: BorderRadius.circular(5),
-                    color: Colors.transparent,
-                  ),
-                  child: Center(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Radio(
-                          value: 4,
-                          groupValue: type,
-                          onChanged: handleRadio,
-                          activeColor: Color(0xFFDB3022),
-                        ),
-                        Text(
-                          "Another Payment Method",
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                            color: type == 4 ? Colors.black : Colors.grey,
-                          ),
-                        ),
-                        Image.asset(
-                          "images/bank/google.png",
-                          width: 50,
-                          height: 50,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                SizedBox(height: 100),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Sub-total",
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w400,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    Text(
-                      '\$${price.toStringAsFixed(2)}',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.red,
-                      ),
-                    ),
-                    SizedBox(height: 100),
-                    InkWell(
-                      onTap: () {
-                        // Thêm hành động tại đây
+                SizedBox(height: 30),
+                ElevatedButton(
+                  onPressed: () {
+                    // Handle payment logic here
+                    // Call your payment processing function
+
+                    // Simulate successful payment
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: Text('Payment Successful'),
+                          content: Text('You have paid \$$price for $subject'),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                // Update user's payment status in Firestore
+                                _updatePaymentStatus();
+                                Navigator.of(context).pop();
+                              },
+                              child: Text('OK'),
+                            ),
+                          ],
+                        );
                       },
-                      child: Container(
-                        padding:
-                            EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                        decoration: BoxDecoration(
-                          color: Color(0xFFDB3022),
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        child: Text(
-                          "Continue",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                    );
+
+                    // Send email notification
+                    sendEmail("Payment Notification",
+                        "$username đã thanh toán \$$price cho khóa học: $subject");
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    padding: EdgeInsets.symmetric(horizontal: 80),
+                  ),
+                  child: Text("Pay"),
+                )
               ],
             ),
           ),
         ),
       ),
     );
+  }
+
+  void _updatePaymentStatus() async {
+    User? user = _auth.currentUser; // Lấy người dùng hiện tại
+    if (user != null) {
+      try {
+        await _firestore.collection('Users').doc(user.uid).update({
+          'hasPaid': true,
+        });
+      } catch (e) {
+        print('Failed to update payment status: $e');
+      }
+    }
   }
 }

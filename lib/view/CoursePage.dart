@@ -1,7 +1,11 @@
-import 'package:fat_app/Model/Courses.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fat_app/view/widgets/search_bar.dart';
+import 'package:fat_app/view/widgets/subject_chips.dart';
+import 'package:fat_app/view/widgets/custom_app_bar.dart';
+import 'package:fat_app/view/widgets/custom_bottom_navigation_bar.dart';
+import 'package:fat_app/Model/Courses.dart';
 
 class CoursePage extends StatefulWidget {
   const CoursePage({Key? key}) : super(key: key);
@@ -11,11 +15,9 @@ class CoursePage extends StatefulWidget {
 }
 
 class _CoursePage extends State<CoursePage> {
-  String username = '';
-  final CollectionReference coursesCollection =
-      FirebaseFirestore.instance.collection('Courses');
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  String username = 'Trần Đức Vũ';
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   List<Course> courses = [];
   List<String> registeredCourses = [];
 
@@ -52,7 +54,6 @@ class _CoursePage extends State<CoursePage> {
     User? user = _auth.currentUser;
     if (user != null) {
       try {
-        //get document by user
         final userDoc =
             await _firestore.collection('Users').doc(user.uid).get();
         setState(() {
@@ -82,102 +83,74 @@ class _CoursePage extends State<CoursePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        title: Row(
-          children: [
-            const CircleAvatar(
-              backgroundImage: AssetImage('images/students.png'),
-            ),
-            const SizedBox(width: 10),
-            Text(
-              username.isNotEmpty ? username : 'User',
-              style: const TextStyle(color: Colors.black),
-            ),
-            const Spacer(),
-            IconButton(
-              onPressed: () {},
-              icon: const Icon(Icons.notifications),
-              color: Colors.black,
-            ),
-          ],
-        ),
-        automaticallyImplyLeading: false,
-      ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: coursesCollection.snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          }
-
-          if (snapshot.hasError) {
-            return Center(
-                child: Text('Có lỗi xảy ra. Vui lòng đăng nhập lại.'));
-          }
-
-          if (snapshot.hasData) {
-            List<Course> courses = snapshot.data!.docs.map((doc) {
-              return Course.fromDocumentSnapshot(doc);
-            }).toList();
-
-            return Column(
-              children: [
-                const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Expected class',
-                      style: TextStyle(fontSize: 24, color: Colors.blue),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: GridView.count(
-                    padding: const EdgeInsets.all(10),
-                    crossAxisCount: 2,
-                    children: courses.map((course) {
-                      bool isRegistered = registeredCourses.contains(course.id);
-                      return _buildClassCard(
-                          course.subject,
-                          course.teacher,
-                          '${course.startTime} - ${course.endTime}',
-                          course.price,
-                          course.description,
-                          isRegistered,
-                          course.id);
-                    }).toList(),
-                  ),
-                ),
-              ],
-            );
-          }
-          return Center(child: Text('No courses available.'));
+      appBar: CustomAppBar(
+        username: username,
+        onAvatarTap: () {
+          Navigator.of(context).pushNamed('/updateinformation');
         },
+        onNotificationTap: () {},
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: [
-          BottomNavigationBarItem(
-            icon: _buildIconWithBackground(
-                Icons.play_circle_filled, Colors.green.shade100),
-            label: 'Interact Learning',
+      body: Column(
+        children: [
+          // Search bar and subject chips
+          Container(
+            color: Colors.green.shade50,
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                SearchBarWidget(
+                  onSearch: (query) {
+                    // Handle search logic
+                    print("Search query: $query");
+                  },
+                ),
+                const SizedBox(height: 12.0),
+                SubjectChipsWidget(subjects: [
+                  'Chemistry',
+                  'Physics',
+                  'Math',
+                  'Geography',
+                  'History',
+                ]),
+              ],
+            ),
           ),
-          BottomNavigationBarItem(
-            icon:
-                _buildIconWithBackground(Icons.schedule, Colors.green.shade100),
-            label: 'Class Schedule',
+          Container(
+            width: double.infinity,
+            color: Colors.lightBlue.shade100,
+            padding: const EdgeInsets.all(16.0),
+            child: const Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Expected class',
+                style: TextStyle(fontSize: 24, color: Colors.blue),
+              ),
+            ),
           ),
-          BottomNavigationBarItem(
-            icon: _buildIconWithBackground(Icons.book, Colors.green.shade100),
-            label: 'Courses',
-          ),
-          BottomNavigationBarItem(
-            icon: _buildIconWithBackground(
-                Icons.person_search, Colors.green.shade100),
-            label: 'Find a tutor',
+          Expanded(
+            child: GridView.count(
+              crossAxisCount: 2,
+              padding: const EdgeInsets.all(16.0),
+              crossAxisSpacing: 16.0,
+              mainAxisSpacing: 16.0,
+              childAspectRatio: 0.7,
+              children: courses.map((course) {
+                bool isRegistered = registeredCourses.contains(course.id);
+                return _buildClassCard(
+                    course.subject,
+                    course.teacher,
+                    '${course.startTime} - ${course.endTime}',
+                    course.price,
+                    course.description,
+                    isRegistered,
+                    course.id);
+              }).toList(),
+            ),
           ),
         ],
+      ),
+      bottomNavigationBar: CustomBottomNavigationBar(
+        currentIndex: 2,
         onTap: (index) {
           switch (index) {
             case 0:
@@ -190,62 +163,12 @@ class _CoursePage extends State<CoursePage> {
               Navigator.of(context).pushNamed('/course');
               break;
             case 3:
-              Navigator.of(context).pushNamed('/chat');
-              break;
-            case 4:
               Navigator.of(context).pushNamed('/findatutor');
               break;
           }
         },
-        selectedItemColor: Colors.green,
-        unselectedItemColor: Colors.black,
-        currentIndex: 2,
       ),
     );
-  }
-
-  Widget _buildIconWithBackground(IconData icon, Color backgroundColor) {
-    return Container(
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        shape: BoxShape.circle,
-      ),
-      padding: const EdgeInsets.all(8.0),
-      child: Icon(icon, color: Colors.green, size: 30),
-    );
-  }
-
-  void _showConfirmationDialog(
-      BuildContext context, double price, String courseId) {
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text("Xác nhận mua khóa học"),
-            content: Text("Bạn xác nhận mua khóa học với giá\$$price"),
-            actions: <Widget>[
-              TextButton(
-                  child: Text("Không"),
-                  onPressed: () {
-                    Navigator.of(context).pop;
-                  }),
-              TextButton(
-                child: Text('Có'),
-                onPressed: () {
-                  Navigator.of(context).pop(); // Đóng hộp thoại
-                  _navigateToPaymentPage(courseId, price);
-                },
-              ),
-            ],
-          );
-        });
-  }
-
-  void _navigateToPaymentPage(String courseId, double price) {
-    Navigator.of(context).pushNamed('/payment', arguments: {
-      'courseId': courseId,
-      'price': price,
-    });
   }
 
   Widget _buildClassCard(
@@ -277,15 +200,20 @@ class _CoursePage extends State<CoursePage> {
             const SizedBox(height: 5),
             isRegistered
                 ? ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.of(context)
+                          .pushNamed('/listlecture', arguments: {
+                        'courseId': courseId,
+                      });
+                    },
                     style:
                         ElevatedButton.styleFrom(backgroundColor: Colors.green),
                     child: const Text('Join'),
                   )
                 : ElevatedButton(
                     onPressed: () {
-                      _registerCourse(courseId);
-                      _showConfirmationDialog(context, price, courseId);
+                      _showConfirmationDialog(
+                          context, price, courseId, subject);
                     },
                     style:
                         ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -295,5 +223,37 @@ class _CoursePage extends State<CoursePage> {
         ),
       ),
     );
+  }
+
+  void _showConfirmationDialog(
+      BuildContext context, double price, String courseId, subject) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Confirm Purchase'),
+            content: Text("Bạn xác nhận mua khóa học với giá \$$price?"),
+            actions: <Widget>[
+              TextButton(
+                  child: Text("Không"),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  }),
+              TextButton(
+                child: Text('Có'),
+                onPressed: () {
+                  Navigator.of(context).pop(); // Đóng hộp thoại
+                  _registerCourse(courseId); // Đăng ký khóa học
+                  Navigator.of(context).pushNamed('/payment', arguments: {
+                    'price': price,
+                    'courseId': courseId,
+                    'subject': subject,
+                    'username': username,
+                  });
+                },
+              ),
+            ],
+          );
+        });
   }
 }

@@ -1,6 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fat_app/view/widgets/custom_app_bar.dart';
+import 'package:fat_app/view/widgets/custom_bottom_navigation_bar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fat_app/view/widgets/search_bar.dart';
+import 'package:fat_app/view/widgets/subject_chips.dart';
 
 class ClassSchedulePage extends StatefulWidget {
   const ClassSchedulePage({super.key});
@@ -11,7 +15,7 @@ class ClassSchedulePage extends StatefulWidget {
 
 class _ClassSchedulePage extends State<ClassSchedulePage> {
   String username = '';
-
+  int currentIndex = 1;
   @override
   void initState() {
     super.initState();
@@ -46,43 +50,34 @@ class _ClassSchedulePage extends State<ClassSchedulePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        title: Row(
-          children: [
-            const CircleAvatar(
-              backgroundImage: AssetImage('images/students.png'),
-            ),
-            const SizedBox(width: 10),
-            const Text(
-              'Trần Đức Vũ',
-              style: TextStyle(color: Colors.black),
-            ),
-            const Spacer(),
-            IconButton(
-              onPressed: () {},
-              icon: const Icon(Icons.notifications),
-              color: Colors.black,
-            ),
-          ],
-        ),
-        automaticallyImplyLeading: false,
-      ),
+      appBar: CustomAppBar(
+          username: username,
+          onAvatarTap: () {
+            Navigator.of(context).pushNamed('/updateinformation');
+          },
+          onNotificationTap: () {}),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  _buildChip('Chemistry'),
-                  _buildChip('Physics'),
-                  _buildChip('Math'),
-                  _buildChip('Geographic'),
-                  _buildChip('History'),
-                ],
-              ),
+          Container(
+            color: Colors.green.shade50,
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                SearchBarWidget(
+                  onSearch: (query) {
+                    // Handle search logic
+                    print("Search query: $query");
+                  },
+                ),
+                const SizedBox(height: 12.0),
+                SubjectChipsWidget(subjects: [
+                  'Chemistry',
+                  'Physics',
+                  'Math',
+                  'Geography',
+                  'History',
+                ]),
+              ],
             ),
           ),
           const Padding(
@@ -117,54 +112,14 @@ class _ClassSchedulePage extends State<ClassSchedulePage> {
           ),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: [
-          BottomNavigationBarItem(
-            icon: _buildIconWithBackground(
-                Icons.play_circle_filled, Colors.green.shade100),
-            label: 'Interact Learning',
-          ),
-          BottomNavigationBarItem(
-            icon:
-                _buildIconWithBackground(Icons.schedule, Colors.green.shade100),
-            label: 'Class Schedule',
-          ),
-          BottomNavigationBarItem(
-            icon: _buildIconWithBackground(Icons.book, Colors.green.shade100),
-            label: 'Courses',
-          ),
-          BottomNavigationBarItem(
-            icon: _buildIconWithBackground(Icons.chat, Colors.green.shade100),
-            label: 'Inbox',
-          ),
-          BottomNavigationBarItem(
-            icon: _buildIconWithBackground(
-                Icons.person_search, Colors.green.shade100),
-            label: 'Find a tutor',
-          ),
-        ],
-        onTap: (int index) {
-          switch (index) {
-            case 0:
-              Navigator.of(context).pushNamed('/interactlearning');
-              break;
-            case 1:
-              Navigator.of(context).pushNamed('/classschedule');
-              break;
-            case 2:
-              Navigator.of(context).pushNamed('/course');
-              break;
-            case 3:
-              Navigator.of(context).pushNamed('/chat');
-              break;
-            case 4:
-              Navigator.of(context).pushNamed('/findatutor');
-              break;
-          }
+      bottomNavigationBar: CustomBottomNavigationBar(
+        currentIndex: currentIndex,
+        onTap: (index) {
+          setState(() {
+            currentIndex = index;
+          });
+          _navigateToPage(index);
         },
-        selectedItemColor: Colors.green,
-        unselectedItemColor: Colors.black,
-        currentIndex: 1,
       ),
     );
   }
@@ -258,5 +213,25 @@ class _ClassSchedulePage extends State<ClassSchedulePage> {
         ),
       ),
     );
+  }
+
+  void _navigateToPage(int index) {
+    switch (index) {
+      case 0:
+        Navigator.of(context).pushNamed('/interactlearning');
+        break;
+      case 1:
+        Navigator.of(context).pushNamed('/classschedule');
+        break;
+      case 2:
+        Navigator.of(context).pushNamed('/course');
+        break;
+      case 3:
+        Navigator.of(context).pushNamed('/inbox');
+        break;
+      case 4:
+        Navigator.of(context).pushNamed('/findtutor');
+        break;
+    }
   }
 }

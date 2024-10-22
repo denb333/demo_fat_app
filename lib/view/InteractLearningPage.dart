@@ -1,16 +1,22 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fat_app/view/widgets/custom_bottom_navigation_bar.dart';
+import 'package:fat_app/view/widgets/search_bar.dart';
+import 'package:fat_app/view/widgets/subject_chips.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import 'package:fat_app/view/widgets/custom_app_bar.dart';
+import 'package:flutter/material.dart';
+
 class InteractLearningPage extends StatefulWidget {
-  const InteractLearningPage({super.key});
+  const InteractLearningPage({Key? key}) : super(key: key);
 
   @override
-  State<InteractLearningPage> createState() => _InteractLearningPageState();
+  _InteractLearningPageState createState() => _InteractLearningPageState();
 }
 
 class _InteractLearningPageState extends State<InteractLearningPage> {
   String username = '';
+  int currentIndex = 0;
 
   @override
   void initState() {
@@ -31,12 +37,7 @@ class _InteractLearningPageState extends State<InteractLearningPage> {
           setState(() {
             username = doc.get('username') as String? ?? '';
           });
-          print('Logged in user: $username');
-        } else {
-          print('User document does not exist');
         }
-      } else {
-        print('No user is currently logged in');
       }
     } catch (e) {
       print('Error loading user data: $e');
@@ -46,24 +47,12 @@ class _InteractLearningPageState extends State<InteractLearningPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            GestureDetector(
-              onTap: () {
-                Navigator.of(context).pushNamed('/updateinformation');
-              },
-              child: const CircleAvatar(
-                backgroundImage: AssetImage('images/students.png'),
-              ),
-            ),
-            Text(username),
-            const Icon(Icons.notifications),
-          ],
-        ),
-        backgroundColor: Colors.green.shade100,
-        elevation: 0,
+      appBar: CustomAppBar(
+        username: username,
+        onAvatarTap: () {
+          Navigator.of(context).pushNamed('/updateinformation');
+        },
+        onNotificationTap: () {},
       ),
       body: ListView(
         children: [
@@ -71,25 +60,27 @@ class _InteractLearningPageState extends State<InteractLearningPage> {
             padding: const EdgeInsets.all(8.0),
             child: Column(
               children: [
-                TextField(
-                  decoration: InputDecoration(
-                    hintText: 'Search',
-                    prefixIcon: const Icon(Icons.search),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
+                Container(
+                  color: Colors.green.shade50,
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      SearchBarWidget(
+                        onSearch: (query) {
+                          // Handle search logic
+                          print("Search query: $query");
+                        },
+                      ),
+                      const SizedBox(height: 12.0),
+                      SubjectChipsWidget(subjects: [
+                        'Chemistry',
+                        'Physics',
+                        'Math',
+                        'Geography',
+                        'History',
+                      ]),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 10),
-                const Wrap(
-                  spacing: 10,
-                  children: [
-                    Chip(label: Text('Chemistry')),
-                    Chip(label: Text('Physics')),
-                    Chip(label: Text('Math')),
-                    Chip(label: Text('Geographic')),
-                    Chip(label: Text('History')),
-                  ],
                 ),
               ],
             ),
@@ -149,53 +140,14 @@ class _InteractLearningPageState extends State<InteractLearningPage> {
           )
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: [
-          BottomNavigationBarItem(
-            icon: _buildIconWithBackground(
-                Icons.play_circle_filled, Colors.green.shade100),
-            label: 'Interact Learning',
-          ),
-          BottomNavigationBarItem(
-            icon:
-                _buildIconWithBackground(Icons.schedule, Colors.green.shade100),
-            label: 'Class Schedule',
-          ),
-          BottomNavigationBarItem(
-            icon: _buildIconWithBackground(Icons.book, Colors.green.shade100),
-            label: 'Courses',
-          ),
-          BottomNavigationBarItem(
-            icon: _buildIconWithBackground(Icons.chat, Colors.green.shade100),
-            label: 'Inbox',
-          ),
-          BottomNavigationBarItem(
-            icon: _buildIconWithBackground(
-                Icons.person_search, Colors.green.shade100),
-            label: 'Find a tutor',
-          ),
-        ],
-        onTap: (int index) {
-          switch (index) {
-            case 0:
-              Navigator.of(context).pushNamed('/interactlearning');
-              break;
-            case 1:
-              Navigator.of(context).pushNamed('/classschedule');
-              break;
-            case 2:
-              Navigator.of(context).pushNamed('/course');
-              break;
-            case 3:
-              Navigator.of(context).pushNamed('/chat');
-              break;
-            case 4:
-              Navigator.of(context).pushNamed('/findatutor');
-              break;
-          }
+      bottomNavigationBar: CustomBottomNavigationBar(
+        currentIndex: currentIndex,
+        onTap: (index) {
+          setState(() {
+            currentIndex = index;
+          });
+          _navigateToPage(index);
         },
-        selectedItemColor: Colors.green,
-        unselectedItemColor: Colors.black,
       ),
     );
   }
@@ -294,15 +246,23 @@ class _InteractLearningPageState extends State<InteractLearningPage> {
     );
   }
 
-  Widget _buildIconWithBackground(IconData icon, Color color) {
-    return CircleAvatar(
-      backgroundColor: color,
-      radius: 20,
-      child: Icon(
-        icon,
-        size: 25,
-        color: Colors.green.shade900,
-      ),
-    );
+  void _navigateToPage(int index) {
+    switch (index) {
+      case 0:
+        Navigator.of(context).pushNamed('/interactlearning');
+        break;
+      case 1:
+        Navigator.of(context).pushNamed('/classschedule');
+        break;
+      case 2:
+        Navigator.of(context).pushNamed('/course');
+        break;
+      case 3:
+        Navigator.of(context).pushNamed('/inbox');
+        break;
+      case 4:
+        Navigator.of(context).pushNamed('/findtutor');
+        break;
+    }
   }
 }

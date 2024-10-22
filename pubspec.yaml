@@ -37,8 +37,8 @@ dependencies:
   cupertino_icons: ^1.0.8
   firebase_core: ^3.3.0
   cloud_firestore: ^5.4.1
-  video_player: ^2.9.1
   firebase_auth: ^5.2.1
+  video_player: ^2.9.1
   firebase_analytics: ^11.2.1
   sqflite: ^2.3.3+1
   path: ^1.9.0
@@ -47,6 +47,8 @@ dependencies:
   permission_handler: ^10.2.0
   firebase_storage: ^12.3.0
   image_picker: ^1.0.0
+  mailer: ^5.0.0
+  video_player: ^2.4.7
 
 dev_dependencies:
   flutter_test:
@@ -72,6 +74,8 @@ flutter:
     -  images/bank/amazon.png
     -  images/bank/google.png
     -  images/bank/master card.png
+    -  images/bank/paypal.png
+    -  images/bank/visa.png
     -  images/logo.png
     -  images/students.png
     -  images/tutor.png

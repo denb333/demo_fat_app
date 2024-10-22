@@ -1,3 +1,4 @@
+import 'package:fat_app/view/ListLecturePage.dart';
 import 'package:fat_app/view/UpdateInformationPage.dart';
 import 'package:fat_app/view/payment/PaymentMethodScreen.dart';
 import 'package:fat_app/view_auth/EmailVerify.dart';
@@ -9,6 +10,7 @@ import 'package:fat_app/view/TutorListPage.dart';
 import 'package:fat_app/view/InteractLearningPage.dart';
 import 'package:fat_app/view_auth/RegisterView.dart';
 import 'package:flutter/material.dart';
+import 'package:path/path.dart';
 import 'constants/routes.dart';
 
 void main() {
@@ -28,6 +30,7 @@ void main() {
       emailverifyRoute: (context) => const EmailVerify(),
       paymentRoutes: (context) => PaymentMethodScreen(),
       updateinformationRoutes: (context) => UpdateInformationPage(),
+      listlectureRoutes: (context) => ListLecturePage()
     },
   ));
 }

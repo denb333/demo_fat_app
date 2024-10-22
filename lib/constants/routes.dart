@@ -16,3 +16,4 @@ const chatpage = '/chat';
 const livestreampage = '/livestream';
 const paymentRoutes = '/payment';
 const updateinformationRoutes = '/updateinformation';
+const listlectureRoutes = '/listlecture';

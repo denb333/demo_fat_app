@@ -81,7 +81,7 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
             ),
           ),
 
-          // Khu vực bình luận và like/dislike
+          // around like anhd dislike
           Expanded(
             flex: 2,
             child: StreamBuilder(
