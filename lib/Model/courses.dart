@@ -8,6 +8,7 @@ class Course {
   final double price;
   final String subject;
   final String description;
+  final String creatorId;
 
   Course({
     required this.id,
@@ -17,6 +18,7 @@ class Course {
     required this.price,
     required this.subject,
     required this.description,
+    required this.creatorId,
   });
 
   factory Course.fromDocumentSnapshot(DocumentSnapshot doc) {
@@ -29,6 +31,7 @@ class Course {
       price: (data['price'] as num?)?.toDouble() ?? 0.0,
       subject: data['subject'] ?? 'No description',
       description: data['description'] ?? 'No description',
+      creatorId: data['ID_created'] ?? '',
     );
   }
 }

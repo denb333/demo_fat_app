@@ -163,7 +163,10 @@ class _CoursePage extends State<CoursePage> {
               Navigator.of(context).pushNamed('/course');
               break;
             case 3:
-              Navigator.of(context).pushNamed('/findatutor');
+              Navigator.of(context).pushNamed('/chat');
+              break;
+            case 4:
+              Navigator.of(context).pushNamed('/listlecture');
               break;
           }
         },

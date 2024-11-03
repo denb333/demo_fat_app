@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:fat_app/Model/User.dart';
 import 'package:fat_app/Model/lecture.dart';
 
 class LectureService {

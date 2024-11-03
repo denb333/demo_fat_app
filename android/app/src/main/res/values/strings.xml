@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">fatapp</string>
+    <string name="facebook_app_id">576259394854839</string>
+    <string name="facebook_client_token">EAAMLsRM7SIEBOwTQ42Rf9LrPxJk7QLS8YF4yZCZBpkuoNNe0CGnfWg01PoZCEKEqqtGmzNZC1ZBKABpa4fmsWZAy03Jf9mMmsoqsTXZCh9qc55XO3yx0eWdmTZALQiYrZBzrkdRJncopeZAKEqlFwCDIsZBsZAwGG2LGTvnfYh4E2m2fEnlpYjtZA4dlKNLYrCX0ue6Al9ZAEI8jce9ZBPBaILJFPlUhVYP0Gz8pGlSZBQZDZD</string>
+    <string name="fb_login_protocol_scheme">fb576259394854839</string>
+</resourc

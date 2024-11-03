@@ -1,3 +1,5 @@
+import 'package:fat_app/Model/courses.dart';
+import 'package:fat_app/Model/user.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -8,25 +10,55 @@ class TutorListPage extends StatefulWidget {
   State<TutorListPage> createState() => _TutorListPageState();
 }
 
+class TutorData {
+  final Course course;
+  final User user;
+
+  TutorData({required this.course, required this.user});
+}
+
 class _TutorListPageState extends State<TutorListPage> {
-  List<Map<String, dynamic>> tutors = [];
+  List<TutorData> tutors = [];
   String searchQuery = "";
-//create map save informtion
-  Future<void> fetchTutors(String query) async {
-    if (query.isEmpty) {
+
+  Future<void> fetchTutors() async {
+    if (searchQuery.isEmpty) {
       setState(() {
         tutors.clear();
       });
       return;
     }
-    //get name tutors by firebase data
-    final result = await FirebaseFirestore.instance
-        .collection('Tutors')
-        .where('name', isGreaterThanOrEqualTo: query)
-        .where('name', isLessThanOrEqualTo: query + '\uf8ff')
-        .get();
+
+    final lowercaseQuery = searchQuery.toLowerCase();
+
+    final queryResult =
+        await FirebaseFirestore.instance.collection('Courses').get();
+
+    final filteredDocs = queryResult.docs.where((doc) {
+      final subject = doc['subject'].toString().toLowerCase();
+      final teacher = doc['teacher'].toString().toLowerCase();
+      return subject.contains(lowercaseQuery) ||
+          teacher.contains(lowercaseQuery);
+    }).toList();
+
+    List<TutorData> loadedTutors = [];
+    for (var doc in filteredDocs) {
+      Course course = Course.fromDocumentSnapshot(doc);
+
+      // Fetch user data
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(course.creatorId)
+          .get();
+
+      if (userDoc.exists) {
+        User user = User.fromMap(userDoc.data() as Map<String, dynamic>);
+        loadedTutors.add(TutorData(course: course, user: user));
+      }
+    }
+
     setState(() {
-      tutors = result.docs.map((doc) => doc.data()).toList();
+      tutors = loadedTutors;
     });
   }
 
@@ -37,17 +69,15 @@ class _TutorListPageState extends State<TutorListPage> {
         backgroundColor: Colors.white,
         title: TextField(
           decoration: InputDecoration(
-            hintText: 'Search',
+            hintText: 'Search subject or teacher',
             prefixIcon: const Icon(Icons.search),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(30),
             ),
           ),
           onChanged: (value) {
-            setState(() {
-              searchQuery = value;
-            });
-            fetchTutors(value);
+            searchQuery = value;
+            fetchTutors();
           },
         ),
         elevation: 0,
@@ -62,20 +92,31 @@ class _TutorListPageState extends State<TutorListPage> {
                 Icon(Icons.person_pin_circle, size: 24),
                 SizedBox(width: 5),
                 Text(
-                  'Found tutor near you',
+                  'Found tutors',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                )
+                ),
               ],
             ),
           ),
-          Expanded(child: ListView.builder(itemBuilder: (context, index) {
-            return _buildTutorCard(
-              tutors[index]['name'],
-              tutors[index]['subjects'],
-              tutors[index]['imagePath'],
-              tutors[index]['distance'],
-            );
-          }))
+          Expanded(
+            child: ListView.builder(
+              itemCount: tutors.length,
+              itemBuilder: (context, index) {
+                final tutorData = tutors[index];
+                return _buildTutorCard(
+                  tutorData.course.teacher,
+                  tutorData.course.subject,
+                  "https://example.com/image.png",
+                  "5 km",
+                  tutorData.course.startTime,
+                  tutorData.course.endTime,
+                  tutorData.course.price.toString(),
+                  tutorData.course.description,
+                  tutorData.user.position,
+                );
+              },
+            ),
+          ),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -125,14 +166,22 @@ class _TutorListPageState extends State<TutorListPage> {
         },
         selectedItemColor: Colors.green,
         unselectedItemColor: Colors.black,
-        currentIndex: 3,
+        currentIndex: 4,
       ),
     );
   }
 }
 
 Widget _buildTutorCard(
-    String name, String subject, String imagePath, String distance) {
+    String name,
+    String subject,
+    String imagePath,
+    String distance,
+    String startTime,
+    String endTime,
+    String price,
+    String description,
+    String position) {
   return Card(
     margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 10.0),
     child: ListTile(
@@ -141,7 +190,16 @@ Widget _buildTutorCard(
         backgroundImage: NetworkImage(imagePath),
       ),
       title: Text('$name ($subject)'),
-      subtitle: Text(distance),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Position: $position'),
+          Text('Time: $startTime - $endTime'),
+          Text('Price: \$${price}'),
+          Text('Description: $description'),
+          Text(distance),
+        ],
+      ),
       trailing: const Icon(Icons.arrow_forward),
       onTap: () {},
     ),

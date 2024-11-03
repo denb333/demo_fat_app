@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fat_app/Model/User.dart' as AppUser;
+import 'package:fat_app/Model/districts_and_wards.dart';
 import 'package:fat_app/constants/routes.dart';
 import 'package:fat_app/service/UserService.dart';
 import 'package:flutter/material.dart';
@@ -13,17 +14,14 @@ class UpdateInformationPage extends StatefulWidget {
 class _UpdateInformationPageState extends State<UpdateInformationPage> {
   final TextEditingController _userNameController = TextEditingController();
   final TextEditingController _classNameController = TextEditingController();
-  String? _selectedPosition;
+  final TextEditingController _addressController = TextEditingController();
+  String? _selectedDistrict;
+  String? _selectedWard;
   String username = '';
   final UserService _userService = UserService();
 
-  final List<String> _positions = [
-    'Ngũ Hành Sơn, Đà Nẵng',
-    'Hải Châu, Đà Nẵng',
-    'Thanh Khê, Đà Nẵng',
-    'Liên Chiểu, Đà Nẵng',
-    'Cẩm Lệ, Đà Nẵng'
-  ];
+  final Map<String, List<String>> _districtsAndWards =
+      DistrictsAndWards.MapDN();
 
   final _formKey = GlobalKey<FormState>();
 
@@ -31,6 +29,7 @@ class _UpdateInformationPageState extends State<UpdateInformationPage> {
   void dispose() {
     _userNameController.dispose();
     _classNameController.dispose();
+    _addressController.dispose();
     super.dispose();
   }
 
@@ -117,16 +116,31 @@ class _UpdateInformationPageState extends State<UpdateInformationPage> {
                 },
               ),
               SizedBox(height: 16),
-              _buildDropdown(),
+              _buildDistrictDropdown(),
+              SizedBox(height: 16),
+              _buildWardDropdown(),
+              SizedBox(height: 16),
+              _buildTextField(
+                controller: _addressController,
+                hintText: 'Enter your street and house number',
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your address';
+                  }
+                  return null;
+                },
+              ),
               SizedBox(height: 30),
               ElevatedButton(
                 onPressed: () async {
                   if (_formKey.currentState!.validate() &&
-                      _selectedPosition != null) {
+                      _selectedDistrict != null &&
+                      _selectedWard != null) {
                     AppUser.User newUser = AppUser.User(
                       userName: _userNameController.text,
                       userClass: _classNameController.text,
-                      position: _selectedPosition!,
+                      position:
+                          '$_selectedWard, $_selectedDistrict, Đà Nẵng, ${_addressController.text}', // Cập nhật vị trí
                     );
 
                     // Get UserID from Firebase Authentication
@@ -195,31 +209,62 @@ class _UpdateInformationPageState extends State<UpdateInformationPage> {
     );
   }
 
-  Widget _buildDropdown() {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.lightBlueAccent.withOpacity(0.5),
-        borderRadius: BorderRadius.circular(30),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          hint: Text('Position'),
-          value: _selectedPosition,
-          isExpanded: true,
-          items: _positions.map((String value) {
-            return DropdownMenuItem<String>(
-              value: value,
-              child: Text(value),
-            );
-          }).toList(),
-          onChanged: (newValue) {
-            setState(() {
-              _selectedPosition = newValue;
-            });
-          },
+  Widget _buildDistrictDropdown() {
+    return DropdownButtonFormField<String>(
+      decoration: InputDecoration(
+        filled: true,
+        fillColor: Colors.lightBlueAccent.withOpacity(0.5),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(30),
+          borderSide: BorderSide.none,
         ),
       ),
+      hint: Text('Select District'),
+      value: _selectedDistrict,
+      isExpanded: true,
+      items: _districtsAndWards.keys.map((String district) {
+        return DropdownMenuItem<String>(
+          value: district,
+          child: Text(district),
+        );
+      }).toList(),
+      onChanged: (newValue) {
+        setState(() {
+          _selectedDistrict = newValue;
+          _selectedWard = null; // Reset ward selection when district changes
+        });
+      },
+    );
+  }
+
+  Widget _buildWardDropdown() {
+    if (_selectedDistrict == null) {
+      return Container(); // Không hiển thị dropdown nếu chưa chọn quận
+    }
+
+    return DropdownButtonFormField<String>(
+      decoration: InputDecoration(
+        filled: true,
+        fillColor: Colors.lightBlueAccent.withOpacity(0.5),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(30),
+          borderSide: BorderSide.none,
+        ),
+      ),
+      hint: Text('Select Ward'),
+      value: _selectedWard,
+      isExpanded: true,
+      items: _districtsAndWards[_selectedDistrict]!.map((String ward) {
+        return DropdownMenuItem<String>(
+          value: ward,
+          child: Text(ward),
+        );
+      }).toList(),
+      onChanged: (newValue) {
+        setState(() {
+          _selectedWard = newValue;
+        });
+      },
     );
   }
 }

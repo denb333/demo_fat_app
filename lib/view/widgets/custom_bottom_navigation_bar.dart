@@ -27,6 +27,10 @@ class CustomBottomNavigationBar extends StatelessWidget {
           label: 'Courses',
         ),
         BottomNavigationBarItem(
+          icon: Icon(Icons.chat),
+          label: 'Chat',
+        ),
+        BottomNavigationBarItem(
           icon: Icon(Icons.person_search),
           label: 'Find a tutor',
         ),

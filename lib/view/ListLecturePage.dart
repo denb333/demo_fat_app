@@ -104,6 +104,7 @@ class LessonTile extends StatelessWidget {
             icon: Icon(Icons.video_label),
             tooltip: 'Xem video',
             onPressed: () {
+              Navigator.of(context).pushNamed('/teacherlive');
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('Xem video: $lessonName')),
               );
