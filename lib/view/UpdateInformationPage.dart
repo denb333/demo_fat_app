@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:fat_app/Model/User.dart' as AppUser;
+import 'package:fat_app/Model/UserModel.dart' as AppUser;
 import 'package:fat_app/Model/districts_and_wards.dart';
 import 'package:fat_app/constants/routes.dart';
 import 'package:fat_app/service/UserService.dart';
@@ -12,6 +12,9 @@ class UpdateInformationPage extends StatefulWidget {
 }
 
 class _UpdateInformationPageState extends State<UpdateInformationPage> {
+  User? user = FirebaseAuth.instance.currentUser;
+  String? email = FirebaseAuth.instance.currentUser?.email;
+
   final TextEditingController _userNameController = TextEditingController();
   final TextEditingController _classNameController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
@@ -35,7 +38,8 @@ class _UpdateInformationPageState extends State<UpdateInformationPage> {
 
   Future<void> _loadUserData() async {
     try {
-      User? user = FirebaseAuth.instance.currentUser;
+
+      final user = this.user;
       if (user != null) {
         DocumentSnapshot doc = await FirebaseFirestore.instance
             .collection('Users')
@@ -136,8 +140,10 @@ class _UpdateInformationPageState extends State<UpdateInformationPage> {
                   if (_formKey.currentState!.validate() &&
                       _selectedDistrict != null &&
                       _selectedWard != null) {
-                    AppUser.User newUser = AppUser.User(
+                    AppUser.UserModel newUser = AppUser.UserModel(
                       userName: _userNameController.text,
+                      email: email!,
+                      role: 'student',
                       userClass: _classNameController.text,
                       position:
                           '$_selectedWard, $_selectedDistrict, Đà Nẵng, ${_addressController.text}', // Cập nhật vị trí
@@ -145,6 +151,7 @@ class _UpdateInformationPageState extends State<UpdateInformationPage> {
 
                     // Get UserID from Firebase Authentication
                     String? userId = FirebaseAuth.instance.currentUser?.uid;
+
 
                     if (userId != null) {
                       bool userExists =

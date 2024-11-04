@@ -1,3 +1,7 @@
+import 'package:fat_app/view_auth/login_view.dart';
+import 'package:fat_app/view_auth/register_view.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:fat_app/view/listlecturePage.dart';
@@ -6,22 +10,35 @@ import 'package:fat_app/view/Teacher/TeacherScreenLive.dart';
 import 'package:fat_app/view/UpdateInformationPage.dart';
 import 'package:fat_app/view/payment/PaymentMethodScreen.dart';
 import 'package:fat_app/view_auth/EmailVerify.dart';
-import 'package:fat_app/view_auth/LoginPage.dart';
+import 'package:fat_app/view_auth/login.dart';
 import 'package:fat_app/view/liveStreamPage.dart';
 import 'package:fat_app/view/ClassSchedulePage.dart';
 import 'package:fat_app/view/CoursePage.dart';
 import 'package:fat_app/view/TutorListPage.dart';
 import 'package:fat_app/view/InteractLearningPage.dart';
-import 'package:fat_app/view_auth/RegisterView.dart';
+import 'package:fat_app/view_auth/register.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 
 import 'constants/routes.dart';
 
-List<CameraDescription>? cameras;
+// List<CameraDescrifption>? cameras;
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  cameras = await availableCameras();
+  if(kIsWeb){
+    await Firebase.initializeApp(
+        options: const FirebaseOptions(
+            apiKey: "AIzaSyCiwggXPtUAGNoyweoUyrfYRgv2fx2GrGw",
+            authDomain: "study-86d58.firebaseapp.com",
+            projectId: "study-86d58",
+            storageBucket: "study-86d58.firebasestorage.app",
+            messagingSenderId: "988979923331",
+            appId: "1:988979923331:web:01192e3ea977b9cdf0ceb6",
+            measurementId: "G-7748LM21HT")
+    );
+  }else{
+    await Firebase.initializeApp();
+  }
+  // cameras = await availableCameras();
 
   runApp(MaterialApp(
     theme: ThemeData(
@@ -35,14 +52,14 @@ Future<void> main() async {
       coursepage: (context) => const CoursePage(),
       fatutorpage: (context) => const TutorListPage(),
       interactlearningpage: (context) => const InteractLearningPage(),
-      loginRoutes: (context) => const LoginView(),
-      registerRoutes: (context) => const RegisterView(),
+      loginRoutes: (context) =>  LoginPage(),
+      registerRoutes: (context) => Register(),
       emailverifyRoute: (context) => const EmailVerify(),
       paymentRoutes: (context) => PaymentMethodScreen(),
       updateinformationRoutes: (context) => UpdateInformationPage(),
       listlectureRoutes: (context) => ListLecturePage(),
       teacherliverecord: (context) => TeacherScreen(),
-      teacherlive: (context) => TeacherScreenLive(cameras: cameras!),
+      // teacherlive: (context) => TeacherScreenLive(cameras: cameras!),
     },
   ));
 }
@@ -93,7 +110,7 @@ class HomePage extends StatelessWidget {
                         Image.asset('images/students.png'),
                         const SizedBox(height: 5),
                         const Text('Students'),
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 5),
                         ElevatedButton(
                           onPressed: () {
                             Navigator.of(context).pushNamedAndRemoveUntil(
@@ -106,8 +123,8 @@ class HomePage extends StatelessWidget {
                     const SizedBox(width: 100),
                     Column(
                       children: [
-                        Image.asset('images/tutor.png', height: 60),
-                        const SizedBox(height: 10),
+                        Image.asset('images/tutor.png', height: 50),
+                        const SizedBox(height: 5),
                         const Text('Tutor'),
                         ElevatedButton(
                           onPressed: () {
@@ -120,6 +137,7 @@ class HomePage extends StatelessWidget {
                     )
                   ],
                 ),
+                // SizedBox(height: 20,),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(

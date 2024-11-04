@@ -1,7 +1,9 @@
 import 'package:fat_app/Model/courses.dart';
-import 'package:fat_app/Model/user.dart';
+import 'package:fat_app/Model/UserModel.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
+import '../Model/UserModel.dart';
 
 class TutorListPage extends StatefulWidget {
   const TutorListPage({super.key});
@@ -12,7 +14,7 @@ class TutorListPage extends StatefulWidget {
 
 class TutorData {
   final Course course;
-  final User user;
+  final UserModel user;
 
   TutorData({required this.course, required this.user});
 }
@@ -52,7 +54,7 @@ class _TutorListPageState extends State<TutorListPage> {
           .get();
 
       if (userDoc.exists) {
-        User user = User.fromMap(userDoc.data() as Map<String, dynamic>);
+        UserModel user = UserModel.fromMap(userDoc.data() as Map<String, dynamic>);
         loadedTutors.add(TutorData(course: course, user: user));
       }
     }
